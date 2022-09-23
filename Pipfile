@@ -9,6 +9,11 @@ flask-cors = "*"
 gunicorn = "*"
 werkzeug = "*"
 psycopg2 = "*"
+flask-login = "*"
+flask-bcrypt = "*"
+flask-wtf = "*"
+wtforms = "*"
+email-validator = "*"
 
 [dev-packages]
 pytest = "*"
