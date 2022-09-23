@@ -14,7 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Load environment variables
 
 load_dotenv()
-database_uri = environ.get('DATABASE_URL')
+database_uri = environ.get('DATABASE_URL') 
 secret_key = environ.get('SECRET_KEY')
 
 # Set up the app 
@@ -122,10 +122,17 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route('/dashboard',  methods=['GET'])
+@app.route('/dashboard',  methods=['GET', 'POST'])
 @login_required
 def dashboard():
     return render_template('dashboard.html')
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
 
 
 @ app.route('/register', methods=['GET', 'POST'])
