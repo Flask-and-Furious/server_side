@@ -8,5 +8,15 @@
 </head>
 <body>
     <h1>Register</h1>
+
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        {{ form.username }}
+        {{ form.email }}
+        {{ form.password }}
+        {{ form.submit }}
+    </form>
+
+    <a href="{{ url_for('login') }}">Already have an account? Log In</a>
 </body>
 </html>
