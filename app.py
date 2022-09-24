@@ -52,10 +52,10 @@ def register():
 def login():
     return render_template('login.html')
 
-@app.route('/code', methods=['POST'])
+@app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
     print('incoming data: ', request.get_json()['code-package']['snippet']['body'])
-    snip = open('snippet.py', 'w') # create (or overwrite a snippet.py file with the code content from the frontend
+    snip = open('snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
     snip.write(request.get_json()['code-package']['snippet']['body'])
     snip.close()
     import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
@@ -63,7 +63,8 @@ def incoming_code():
     result = eval(f'snippet.{function}')
     print('result after eval: ', result)
    
-    return str(result) # integer cannot be returned for some reason. Hmmm... silly Python!
+    return str(result) # send back the returned value to frontend
+    # integer cannot be returned for some reason. Hmmm... silly Python!
 
 
 if __name__ == "__main__":
