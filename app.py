@@ -1,11 +1,10 @@
-from snippet import add
-import os
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from werkzeug import exceptions
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from os import environ
+
 
 # Load environment variables
 
@@ -55,15 +54,19 @@ def login():
 
 @app.route('/code', methods=['POST'])
 def incoming_code():
-    print('incoming data: ', request.get_json()['code'])
-    snippet = open('snippet.py', 'w')
-    snippet.write(request.get_json()['code'])
-    snippet.close()
-
-    result = add(2,3)
-    print('add function: ', result)
+    print('incoming data: ', request.get_json()['code-package']['snippet']['body'])
+    snip = open('snippet.py', 'w')
+    snip.write(request.get_json()['code-package']['snippet']['body'])
+    snip.close()
+    import snippet
+    # print('imported shit: ', imported_shit)
+    print('result fn to send to eval: ', request.get_json()['code-package']['snippet']['to-execute'])
+    function = request.get_json()['code-package']['snippet']['to-execute']
+    result = eval(f'snippet.{function}')
+    print('result after eval: ', result)
    
     return str(result)
+    # return 'anyad'
 
 
 if __name__ == "__main__":
