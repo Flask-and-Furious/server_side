@@ -55,18 +55,15 @@ def login():
 @app.route('/code', methods=['POST'])
 def incoming_code():
     print('incoming data: ', request.get_json()['code-package']['snippet']['body'])
-    snip = open('snippet.py', 'w')
+    snip = open('snippet.py', 'w') # create (or overwrite a snippet.py file with the code content from the frontend
     snip.write(request.get_json()['code-package']['snippet']['body'])
     snip.close()
-    import snippet
-    # print('imported shit: ', imported_shit)
-    print('result fn to send to eval: ', request.get_json()['code-package']['snippet']['to-execute'])
+    import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
     function = request.get_json()['code-package']['snippet']['to-execute']
     result = eval(f'snippet.{function}')
     print('result after eval: ', result)
    
-    return str(result)
-    # return 'anyad'
+    return str(result) # integer cannot be returned for some reason. Hmmm... silly Python!
 
 
 if __name__ == "__main__":
