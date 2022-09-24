@@ -60,7 +60,12 @@ def incoming_code():
     snip.close()
     import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
     function = request.get_json()['code-package']['snippet']['to-execute']
-    result = eval(f'snippet.{function}')
+    try:
+        result = eval(f'snippet.{function}')
+    except SyntaxError:
+        return 'Syntax Error' # Buggy
+    except:
+        return 'Unsuccessful attempt'      # This can be anything but the correct return value
     print('result after eval: ', result)
    
     return str(result) # send back the returned value to frontend
