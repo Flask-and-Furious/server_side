@@ -1,29 +1,20 @@
-from flask import Flask, render_template, redirect, url_for, request #done
-from flask_cors import CORS #done
-from flask_sqlalchemy import SQLAlchemy #done
-from flask_migrate import Migrate #done
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, 
-current_user
+from flask import Flask, request, jsonify, make_response, redirect
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-from dotenv import load_dotenv #done
-from os import environ #done
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from werkzeug import exceptions
-from werkzeug.security import generate_password_hash, check_password_hash #done 
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 
-from flask_wtf import FlaskForm #done
-from wtforms import StringField, PasswordField, SubmitField #done
-from wtforms.validators import InputRequired, Length, ValidationError, EqualTo #done
-
-
+from dotenv import load_dotenv 
+from os import environ 
 
 # Load environment variables
 
 load_dotenv()
 database_uri = environ.get('DATABASE_URL') 
 secret_key = environ.get('SECRET_KEY')
-
-# Set up the app 
 
 app = Flask(__name__)
 app.config.update(
@@ -53,8 +44,6 @@ def load_user(user_id):
 def create_tables():
     db.create_all()
 
-# Models 
-
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
@@ -65,7 +54,7 @@ class Users(db.Model, UserMixin):
 
     @property
     def password_hash(self):
-	    raise AttributeError('password is not a readable attribute!')ƒ
+	    raise AttributeError('password is not a readable attribute!')
 
     @password_hash.setter
     def password_hash(self, password):
@@ -74,42 +63,6 @@ class Users(db.Model, UserMixin):
     def verify_password_hash(self, password):
 	    return check_password_hash(self.password_hash, password)
 
-    # Validate if user exists
-
-    def validate_username(self, username):
-            existing_user_username = User.query.filter_by(
-                username=username.data).first()
-            if existing_user_username:
-                raise ValidationError(
-                    'That username already exists. Please choose a different one.')
-
-                
-# Form for demonstration
-
-class RegisterForm(FlaskForm):
-    username = StringField(validators=[
-        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-
-    email= StringField(validators=[
-        InputRequired(), Length(min=20, max=100)], render_kw={"placeholder": "Email"})
-
-    password = PasswordField(validators=[
-        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
-
-
-    submit = SubmitField('Register')
-
-
-class LoginForm(FlaskForm):
-    username = StringField(validators=[
-        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-
-    password = PasswordField(validators=[
-        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
-
-    submit = SubmitField('Login')
-
-# Routes 
 
 @app.route('/')
 def home():
@@ -118,20 +71,16 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(username=form.username.data).first()
-        if user:
-            if check_password_hash(user.password, form.password.data):
-                login_user(user)
-                return redirect(url_for('dashboard'))
-    return render_template('login.html', form=form)
+   data =  request.get_json()
 
+    username = data.get('username')
+    password = data.get('password')
+    db_user = Users.query.filter_by(username=username).first()
+    if db_user and check_password_hash(db_user.password, password):
+            login_user(db_user)
+            return '<h1>Logged in </h1>'
+    return jsonify({"message": f"Could not login!"})
 
-@app.route('/dashboard',  methods=['GET', 'POST'])
-@login_required
-def dashboard():
-    return render_template('dashboard.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
@@ -142,19 +91,26 @@ def logout():
 
 @ app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegisterForm()
+    if request.method == "GET":
+        return 'Register'
+    elif request.method == 'POST':
+        data = request.get_json()
+        username = data.get('username')
+        db_user = Users.query.filter_by(username=username).first()
 
-    if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data)
-        new_user = Users(username=form.username.data, email=form.email.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
+        if db_user is not None:
+            return jsonify({"message": f"User with username {username} already exists"})
+        else:
+            new_user = Users(
+                username=data.get('username'), 
+                email=data.get('email'), 
+                password=generate_password_hash(data.get('password')))
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('login'))
 
-    return render_template('register.html', form=form)
+    return make_response(jsonify({"message":"User created successfully"}),201)
 
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
