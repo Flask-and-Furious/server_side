@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+import requests
 from flask_cors import CORS
 from werkzeug import exceptions
 from flask_sqlalchemy import SQLAlchemy
@@ -54,21 +55,22 @@ def login():
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
-    print('incoming data: ', request.get_json()['code-package']['snippet']['body'])
     snip = open('snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
     snip.write(request.get_json()['code-package']['snippet']['body'])
     snip.close()
     import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
-    function = request.get_json()['code-package']['snippet']['to-execute']
+    function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
+    function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
     try:
-        result = eval(f'snippet.{function}')
+        result_1 = eval(f'snippet.{function_1}')
+        result_2 = eval(f'snippet.{function_2}')
     except SyntaxError:
         return 'Syntax Error' # Buggy
     except:
         return 'Unsuccessful attempt'      # This can be anything but the correct return value
-    print('result after eval: ', result)
+    print('result after eval: ', result_1, result_2)
    
-    return str(result) # send back the returned value to frontend
+    return [result_1, result_2] # send back the returned value to frontend
     # integer cannot be returned for some reason. Hmmm... silly Python!
 
 
