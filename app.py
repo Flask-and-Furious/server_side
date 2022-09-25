@@ -1,15 +1,21 @@
-from flask import Flask, render_template, redirect, url_for, request 
-from flask_cors import CORS
+from flask import Flask, render_template, redirect, url_for, request #done
+from flask_cors import CORS #done
+from flask_sqlalchemy import SQLAlchemy #done
+from flask_migrate import Migrate #done
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, 
+current_user
+
+from dotenv import load_dotenv #done
+from os import environ #done
+
 from werkzeug import exceptions
-from flask_sqlalchemy import SQLAlchemy
-from dotenv import load_dotenv
-from os import environ
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError, EqualTo
-from flask_migrate import Migrate
-from werkzeug.security import generate_password_hash, check_password_hash 
+from werkzeug.security import generate_password_hash, check_password_hash #done 
+
+from flask_wtf import FlaskForm #done
+from wtforms import StringField, PasswordField, SubmitField #done
+from wtforms.validators import InputRequired, Length, ValidationError, EqualTo #done
+
+
 
 # Load environment variables
 
@@ -59,7 +65,7 @@ class Users(db.Model, UserMixin):
 
     @property
     def password_hash(self):
-	    raise AttributeError('password is not a readable attribute!')
+	    raise AttributeError('password is not a readable attribute!')ƒ
 
     @password_hash.setter
     def password_hash(self, password):
@@ -68,14 +74,14 @@ class Users(db.Model, UserMixin):
     def verify_password_hash(self, password):
 	    return check_password_hash(self.password_hash, password)
 
-# Validate if user exists
+    # Validate if user exists
 
-def validate_username(self, username):
-        existing_user_username = User.query.filter_by(
-            username=username.data).first()
-        if existing_user_username:
-            raise ValidationError(
-                'That username already exists. Please choose a different one.')
+    def validate_username(self, username):
+            existing_user_username = User.query.filter_by(
+                username=username.data).first()
+            if existing_user_username:
+                raise ValidationError(
+                    'That username already exists. Please choose a different one.')
 
                 
 # Form for demonstration
@@ -132,7 +138,6 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for('login'))
-
 
 
 @ app.route('/register', methods=['GET', 'POST'])
