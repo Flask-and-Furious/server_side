@@ -72,14 +72,13 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
    data =  request.get_json()
-
-    username = data.get('username')
-    password = data.get('password')
-    db_user = Users.query.filter_by(username=username).first()
-    if db_user and check_password_hash(db_user.password, password):
+   username = data.get('username')
+   password = data.get('password')
+   db_user = Users.query.filter_by(username=username).first()
+   if db_user and check_password_hash(db_user.password, password):
             login_user(db_user)
             return '<h1>Logged in </h1>'
-    return jsonify({"message": f"Could not login!"})
+   return jsonify({"message": f"Could not login!"})
 
 
 @app.route('/logout', methods=['GET', 'POST'])
