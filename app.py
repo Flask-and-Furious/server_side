@@ -96,8 +96,8 @@ def logout():
 def register():
     data = request.get_json()
     print("Data test:", data)
-    username = data['parameters']['username']
-    email = data['parameters']['email']
+    username = data['username']
+    email = data['email']
     db_user = Users.query.filter_by(username=username).first()
     db_email = Users.query.filter_by(email=email).first()
     if db_user is not None:
@@ -106,9 +106,9 @@ def register():
         return make_response(f"{email} already exists", 403)
     else:
         new_user = Users(
-            username = data['parameters']['username'], 
-            email=data['parameters']['email'], 
-            password=generate_password_hash(data['parameters']['password']))
+            username = data['username'], 
+            email=data['email'], 
+            password=generate_password_hash(data['password']))
         db.session.add(new_user)
         db.session.commit()
         return make_response("user created", 201)
