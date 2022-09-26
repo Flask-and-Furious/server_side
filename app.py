@@ -110,6 +110,27 @@ def register():
         db.session.commit()
         return make_response("user created", 201)
 
+@app.route('/code', methods=['POST']) # route for accepting codes from frontend
+def incoming_code():
+    snip = open('snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
+    snip.write(request.get_json()['code-package']['snippet']['body'])
+    snip.close()
+    import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
+    function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
+    function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
+    try:
+        result_1 = eval(f'snippet.{function_1}')
+        result_2 = eval(f'snippet.{function_2}')
+    except SyntaxError:
+        return 'Syntax Error' # Buggy
+    except:
+        return 'Unsuccessful attempt'      # This can be anything but the correct return value
+    print('result after eval: ', result_1, result_2)
+   
+    return [result_1, result_2] # send back the returned value to frontend
+    # integer cannot be returned for some reason. Hmmm... silly Python!
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
