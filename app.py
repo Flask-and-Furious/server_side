@@ -14,16 +14,18 @@ from os import environ
 
 load_dotenv()
 database_uri = environ.get('DATABASE_URL') 
+'''
 if 'postgres' in database_uri:
     database_uri = database_uri.replace('postgres:', 'postgresql:')
 secret_key = environ.get('SECRET_KEY')
-
+'''
 app = Flask(__name__)
+'''
 app.config.update(
     SQLALCHEMY_DATABASE_URI=database_uri,
     SQLACHEMY_TRACK_MODIFICATIONS=environ.get('SQL_ALCHEMY_TRACK_MODIFICATIONS'),
     SECRET_KEY=secret_key
-)
+)'''
 
 CORS(app)
 
