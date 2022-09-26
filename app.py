@@ -92,26 +92,25 @@ def logout():
     return redirect(url_for('login'))
 
 
-@ app.route('/register', methods=['GET', 'POST'])
+@ app.route('/register', methods=['POST'])
 def register():
-    if request.method == 'POST':
-        data = request.get_json()
-        username = data['body']['username']
-        email = data['body']['email']
-        db_user = Users.query.filter_by(username=username).first()
-        db_email = Users.query.filter_by(email=email).first()
-        if db_user is not None:
-            return make_response(f"{username} already exists", 403)
-        elif db_email is not None:
-            return make_response(f"{email} already exists", 403)
-        else:
-            new_user = Users(
-                username = data['body']['username'], 
-                email=data['body']['email'], 
-                password=generate_password_hash(data['body']['password']))
-            db.session.add(new_user)
-            db.session.commit()
-            return make_response("user created", 201)
+    data = request.get_json()
+    username = data['body']['username']
+    email = data['body']['email']
+    db_user = Users.query.filter_by(username=username).first()
+    db_email = Users.query.filter_by(email=email).first()
+    if db_user is not None:
+        return make_response(f"{username} already exists", 403)
+    elif db_email is not None:
+        return make_response(f"{email} already exists", 403)
+    else:
+        new_user = Users(
+            username = data['body']['username'], 
+            email=data['body']['email'], 
+            password=generate_password_hash(data['body']['password']))
+        db.session.add(new_user)
+        db.session.commit()
+        return make_response("user created", 201)
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
