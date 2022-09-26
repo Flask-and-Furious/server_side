@@ -109,7 +109,7 @@ def register():
             password=generate_password_hash(data['password']))
         db.session.add(new_user)
         db.session.commit()
-        return make_response("user created", 201)
+        return make_response(jsonify("user created", 201))
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
