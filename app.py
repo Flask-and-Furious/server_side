@@ -74,14 +74,14 @@ def home():
 @app.route('/login', methods=['POST'])
 def login():
     data =  request.get_json()
-    username = data['body']['username']
-    password = data['body']['password']
+    username = data['parameters']['username']
+    password = data['parameters']['password']
     db_user = Users.query.filter_by(username=username).first()
     if db_user and check_password_hash(db_user.password, password):
                 login_user(db_user)
                 return make_response('success', 200)
     print(data)
-    print(data['body'])
+    print(data['parameters'])
     return make_response('failed', 401)
 
 
@@ -95,8 +95,9 @@ def logout():
 @ app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data['body']['username']
-    email = data['body']['email']
+    print(data)
+    username = data['parameters']['username']
+    email = data['parameters']['email']
     db_user = Users.query.filter_by(username=username).first()
     db_email = Users.query.filter_by(email=email).first()
     if db_user is not None:
@@ -105,9 +106,9 @@ def register():
         return make_response(f"{email} already exists", 403)
     else:
         new_user = Users(
-            username = data['body']['username'], 
-            email=data['body']['email'], 
-            password=generate_password_hash(data['body']['password']))
+            username = data['parameters']['username'], 
+            email=data['parameters']['email'], 
+            password=generate_password_hash(data['parameters']['password']))
         db.session.add(new_user)
         db.session.commit()
         return make_response("user created", 201)
