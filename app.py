@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response, redirect
+from flask import Flask, request, jsonify, make_response, redirect, url_for
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -72,13 +72,15 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
    data =  request.get_json()
-   username = data.get('username')
-   password = data.get('password')
+   username = data['body']['username']
+   password = data['body']['password']
    db_user = Users.query.filter_by(username=username).first()
    if db_user and check_password_hash(db_user.password, password):
             login_user(db_user)
-            return '<h1>Logged in </h1>'
-   return jsonify({"message": f"Could not login!"})
+            return make_response('success', 200)
+   print(data)
+   print(data['body'])
+   return make_response('failed', 401)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -90,25 +92,23 @@ def logout():
 
 @ app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == "GET":
-        return 'Register'
-    elif request.method == 'POST':
-        data = request.get_json()
-        username = data.get('username')
-        db_user = Users.query.filter_by(username=username).first()
-
-        if db_user is not None:
-            return jsonify({"message": f"User with username {username} already exists"})
-        else:
-            new_user = Users(
-                username=data.get('username'), 
-                email=data.get('email'), 
-                password=generate_password_hash(data.get('password')))
-            db.session.add(new_user)
-            db.session.commit()
-            return redirect(url_for('login'))
-
-    return make_response(jsonify({"message":"User created successfully"}),201)
+    data = request.get_json()
+    username = data['body']['username']
+    email = data['body']['email']
+    db_user = Users.query.filter_by(username=username).first()
+    db_email = Users.query.filter_by(email=email).first()
+    if db_user is not None:
+        return make_response(f"{username} already exists", 403)
+    elif db_email is not None:
+         return make_response(f"{email} already exists", 403)
+    else:
+        new_user = Users(
+            username = data['body']['username'], 
+            email=data['body']['email'], 
+            password=generate_password_hash(data['body']['password']))
+        db.session.add(new_user)
+        db.session.commit()
+        return make_response("user created", 201)
 
 
 if __name__ == "__main__":
