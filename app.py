@@ -80,8 +80,6 @@ def login():
     if db_user and check_password_hash(db_user.password, password):
                 login_user(db_user)
                 return make_response('success', 200)
-    print(data)
-    print(data['parameters'])
     return make_response('failed', 401)
 
 
