@@ -79,8 +79,8 @@ def login():
     db_user = Users.query.filter_by(username=username).first()
     if db_user and check_password_hash(db_user.password, password):
                 login_user(db_user)
-                return make_response('success', 200)
-    return make_response('failed', 401)
+                return make_response(jsonify('success', 200))
+    return make_response(jsonify('failed', 401))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -99,9 +99,9 @@ def register():
     db_user = Users.query.filter_by(username=username).first()
     db_email = Users.query.filter_by(email=email).first()
     if db_user is not None:
-        return make_response(f"{username} already exists", 403)
+        return make_response(jsonify(f"{username} already exists", 403))
     elif db_email is not None:
-        return make_response(f"{email} already exists", 403)
+        return make_response(jsonify(f"{email} already exists", 403))
     else:
         new_user = Users(
             username = data['username'], 
