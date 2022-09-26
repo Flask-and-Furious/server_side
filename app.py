@@ -14,6 +14,8 @@ from os import environ
 
 load_dotenv()
 database_uri = environ.get('DATABASE_URL') 
+if 'postgres' in database_uri:
+    database_uri = database_uri.replace('postgres:', 'postgresql:')
 secret_key = environ.get('SECRET_KEY')
 
 app = Flask(__name__)
