@@ -95,7 +95,7 @@ def logout():
 @ app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    print(data)
+    print("Data test:", data)
     username = data['parameters']['username']
     email = data['parameters']['email']
     db_user = Users.query.filter_by(username=username).first()
