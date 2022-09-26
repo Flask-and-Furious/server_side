@@ -38,4 +38,6 @@ def test_index_page__logged_in(client):
        assert res.status_code == 200
 
  
- 
+def test_home_bad_http_method(api):
+   resp = api.post('/logout')
+   assert resp.status_code == 500
