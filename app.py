@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 
+from flask_jwt_extended import JWTManager, create_access_token
+
 from dotenv import load_dotenv 
 from os import environ 
 
@@ -18,15 +20,18 @@ if 'postgres' in database_uri:
     database_uri = database_uri.replace('postgres:', 'postgresql:')
 secret_key = environ.get('SECRET_KEY')
 
+# Set up app
+
 app = Flask(__name__)
 app.config.update(
     SQLALCHEMY_DATABASE_URI=database_uri,
     SQLACHEMY_TRACK_MODIFICATIONS=environ.get('SQL_ALCHEMY_TRACK_MODIFICATIONS'),
-    SECRET_KEY=secret_key
+    SECRET_KEY=secret_key,
+    JWT_SECRET_KEY=environ.get('JWT_SECRET_KEY')
 )
 
 CORS(app)
-
+jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -79,8 +84,9 @@ def login():
         password = data['password']
         db_user = Users.query.filter_by(username=username).first()
         if db_user and check_password_hash(db_user.password, password):
+                    access_token = create_access_token(identity=db_user.id)
                     login_user(db_user)
-                    return jsonify('success', 200)
+                    return jsonify({ "token": access_token, "user_id": db_user.id }, 200)
         return jsonify('failed', 401)
     except Exception as err:
         print(err)
