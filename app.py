@@ -160,9 +160,9 @@ def incoming_code():
     try:
         result_1 = exec_with_return(f"{code_body}\n{test_function_1}")
         result_2 = exec_with_return(f"{code_body}\n{test_function_2}")
-    except Exception as e:
+    except BaseException as e: 
         print(e)
-        return {'error': e}      # This can be anything but the correct return value
+        return {'error' : str(e)}      # This can be anything but the correct return value
     print('result after eval: ', result_1, result_2)
    
     return [result_1, result_2] # send back the returned value to frontend
