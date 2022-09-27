@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 
+from flask_jwt_extended import JWTManager, create_access_token
+
 from dotenv import load_dotenv 
 from os import environ
 import random
@@ -23,15 +25,18 @@ if 'postgres' in database_uri:
     database_uri = database_uri.replace('postgres:', 'postgresql:')
 secret_key = environ.get('SECRET_KEY')
 
+# Set up app
+
 app = Flask(__name__)
 app.config.update(
     SQLALCHEMY_DATABASE_URI=database_uri,
     SQLACHEMY_TRACK_MODIFICATIONS=environ.get('SQL_ALCHEMY_TRACK_MODIFICATIONS'),
-    SECRET_KEY=secret_key
+    SECRET_KEY=secret_key,
+    JWT_SECRET_KEY=environ.get('JWT_SECRET_KEY')
 )
 
 CORS(app)
-
+jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -73,20 +78,24 @@ class Users(db.Model, UserMixin):
 
 @app.route('/')
 def home():
-    return "<h1>Hello!</h1>"
+    return "<h1>Welcome to debug server!</h1>"
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    data =  request.get_json()
-    username = data['username']
-    password = data['password']
-    db_user = Users.query.filter_by(username=username).first()
-    if db_user and check_password_hash(db_user.password, password):
-                login_user(db_user)
-                return make_response(jsonify('success', 200))
-    return make_response(jsonify('failed', 401))
-
+    try:
+        data =  request.get_json()
+        username = data['username']
+        password = data['password']
+        db_user = Users.query.filter_by(username=username).first()
+        if db_user and check_password_hash(db_user.password, password):
+                    access_token = create_access_token(identity=db_user.id)
+                    login_user(db_user)
+                    return jsonify({ "token": access_token, "user_id": db_user.id }, 200)
+        return jsonify('failed', 401)
+    except Exception as err:
+        print(err)
+        return jsonify("something went wrong!", 500)
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
@@ -97,24 +106,28 @@ def logout():
 
 @ app.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    print("Data test:", data)
-    username = data['username']
-    email = data['email']
-    db_user = Users.query.filter_by(username=username).first()
-    db_email = Users.query.filter_by(email=email).first()
-    if db_user is not None:
-        return make_response(jsonify(f"{username} already exists", 403))
-    elif db_email is not None:
-        return make_response(jsonify(f"{email} already exists", 403))
-    else:
-        new_user = Users(
-            username = data['username'], 
-            email=data['email'], 
-            password=generate_password_hash(data['password']))
-        db.session.add(new_user)
-        db.session.commit()
-        return make_response(jsonify("user created", 201))
+    try:
+        data = request.get_json()
+        print("Data test:", data)
+        username = data['username']
+        email = data['email']
+        db_user = Users.query.filter_by(username=username).first()
+        db_email = Users.query.filter_by(email=email).first()
+        if db_user is not None:
+            return jsonify(f"{username} already exists", 403)
+        elif db_email is not None:
+            return jsonify(f"{email} already exists", 403)
+        else:
+            new_user = Users(
+                username = data['username'], 
+                email=data['email'], 
+                password=generate_password_hash(data['password']))
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify("user created", 201)
+    except Exception as err:
+        print(err)
+        return jsonify("something went wrong!", 500)
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
