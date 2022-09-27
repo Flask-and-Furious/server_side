@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 from flask import Flask, request, jsonify, make_response, redirect, url_for
+=======
+import os
+from flask import Flask, render_template, request
+>>>>>>> 184191e (try with python)
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -133,6 +138,20 @@ def incoming_code():
     return [result_1, result_2] # send back the returned value to frontend
     # integer cannot be returned for some reason. Hmmm... silly Python!
 
+
+@app.route('/code', methods=['POST'])
+def incoming_code():
+    snippet = open('snippet.py', 'w')
+    snippet.write(request.get_json()['code'] + '\n\nif __name__ == "__main__":\n\tadd(2,3)')
+    snippet.close()
+    print('request: ', request.get_json()['code'])
+    result = os.system('python snippet.py')
+    print('result variable in fn: ', result)
+    # subprocess.call('snippet.py', shell=True)
+    # f = open("demofile3.txt", "w")
+    # f.write("Woops! I have deleted the content!")
+    # f.close()
+    return 'Data from frontend'
 
 
 if __name__ == "__main__":
