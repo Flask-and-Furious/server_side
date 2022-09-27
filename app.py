@@ -8,7 +8,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 
 from dotenv import load_dotenv 
-from os import environ 
+from os import environ
+import random
+import string
+import importlib
+import time
 
 
 # Load environment variables
@@ -114,9 +118,16 @@ def register():
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
-    snip = open('snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
+    # file_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    # print('filename: ', file_name)
+    snip = open(f'snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
     snip.write(request.get_json()['code-package']['snippet']['body'])
     snip.close()
+    # module = importlib.import_module(file_name)
+    time.sleep(3)
+    # module = __import__('snippet')
+    # globals().update(importlib.import_module(file_name).__dict__)
+    # print('module: ', module)
     import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
     function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
     function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
