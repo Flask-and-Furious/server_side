@@ -10,13 +10,7 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, log
 from flask_jwt_extended import JWTManager, create_access_token
 
 from dotenv import load_dotenv 
-from os import environ
-import random
-import string
-import importlib
-import ast
-import copy
-
+from os import environ 
 
 # Load environment variables
 
@@ -92,7 +86,7 @@ def login():
         if db_user and check_password_hash(db_user.password, password):
                     access_token = create_access_token(identity=db_user.id)
                     login_user(db_user)
-                    return jsonify({ "token": access_token, "user": db_user }, 200)
+                    return jsonify({ "token": access_token, "user": db_user.id }, 200)
         return jsonify('failed', 401)
     except Exception as err:
         print(err)
@@ -132,41 +126,25 @@ def register():
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
-    
-    def convertExpr2Expression(Expr):
-        Expr.lineno = 0
-        Expr.col_offset = 0
-        result = ast.Expression(Expr.value, lineno=0, col_offset = 0)
-        return result
-
-    def exec_with_return(code):
-        code_ast = ast.parse(code)
-
-        init_ast = copy.deepcopy(code_ast)
-        init_ast.body = code_ast.body[:-1]
-
-        last_ast = copy.deepcopy(code_ast)
-        last_ast.body = code_ast.body[-1:]
-
-        exec(compile(init_ast, "<ast>", "exec"), globals())
-        if type(last_ast.body[0]) == ast.Expr:
-            return eval(compile(convertExpr2Expression(last_ast.body[0]), "<ast>", "eval"),globals())
-        else:
-            exec(compile(last_ast, "<ast>", "exec"),globals())
-
-    code_body = request.get_json()['code-package']['snippet']['body']
-    test_function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
-    test_function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
+    snip = open('snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
+    snip.write(request.get_json()['code-package']['snippet']['body'])
+    snip.close()
+    import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
+    function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
+    function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
     try:
-        result_1 = exec_with_return(f"{code_body}\n{test_function_1}")
-        result_2 = exec_with_return(f"{code_body}\n{test_function_2}")
-    except BaseException as e: 
-        print(e)
-        return {'error' : str(e)}      # This can be anything but the correct return value
+        result_1 = eval(f'snippet.{function_1}')
+        result_2 = eval(f'snippet.{function_2}')
+    except SyntaxError:
+        return 'Syntax Error' # Buggy
+    except:
+        return 'Unsuccessful attempt'      # This can be anything but the correct return value
     print('result after eval: ', result_1, result_2)
    
     return [result_1, result_2] # send back the returned value to frontend
     # integer cannot be returned for some reason. Hmmm... silly Python!
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
