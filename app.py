@@ -14,7 +14,8 @@ from os import environ
 import random
 import string
 import importlib
-import time
+import ast
+import copy
 
 
 # Load environment variables
@@ -131,22 +132,36 @@ def register():
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
-    # file_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
-    # print('filename: ', file_name)
-    snip = open(f'snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
-    snip.write(request.get_json()['code-package']['snippet']['body'])
-    snip.close()
-    # module = importlib.import_module(file_name)
-    time.sleep(3)
-    # module = __import__('snippet')
-    # globals().update(importlib.import_module(file_name).__dict__)
-    # print('module: ', module)
-    import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
-    function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
-    function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
+    
+    def convertExpr2Expression(Expr):
+        Expr.lineno = 0
+        Expr.col_offset = 0
+        result = ast.Expression(Expr.value, lineno=0, col_offset = 0)
+        return result
+
+    def exec_with_return(code):
+        code_ast = ast.parse(code)
+
+        init_ast = copy.deepcopy(code_ast)
+        init_ast.body = code_ast.body[:-1]
+
+        last_ast = copy.deepcopy(code_ast)
+        last_ast.body = code_ast.body[-1:]
+
+        exec(compile(init_ast, "<ast>", "exec"), globals())
+        if type(last_ast.body[0]) == ast.Expr:
+            return eval(compile(convertExpr2Expression(last_ast.body[0]), "<ast>", "eval"),globals())
+        else:
+            exec(compile(last_ast, "<ast>", "exec"),globals())
+
+    code_body = request.get_json()['code-package']['snippet']['body']
+    test_function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
+    test_function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
+    result_1 = exec_with_return(f"{request.get_json()['code-package']['snippet']['body']}\n{request.get_json()['code-package']['snippet']['to-execute-1']}")
+    # result_1 = eval(f'snippet.{function_1}')
     try:
-        result_1 = eval(f'snippet.{function_1}')
-        result_2 = eval(f'snippet.{function_2}')
+        result_1 = exec_with_return(f"{code_body}\n{test_function_1}")
+        result_2 = exec_with_return(f"{code_body}\n{test_function_2}")
     except SyntaxError:
         return 'Syntax Error' # Buggy
     except:
