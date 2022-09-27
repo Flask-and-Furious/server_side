@@ -92,7 +92,7 @@ def login():
         if db_user and check_password_hash(db_user.password, password):
                     access_token = create_access_token(identity=db_user.id)
                     login_user(db_user)
-                    return jsonify({ "token": access_token, "user_id": db_user.id }, 200)
+                    return jsonify({ "token": access_token, "user": db_user }, 200)
         return jsonify('failed', 401)
     except Exception as err:
         print(err)
