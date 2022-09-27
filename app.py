@@ -157,15 +157,12 @@ def incoming_code():
     code_body = request.get_json()['code-package']['snippet']['body']
     test_function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
     test_function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
-    result_1 = exec_with_return(f"{request.get_json()['code-package']['snippet']['body']}\n{request.get_json()['code-package']['snippet']['to-execute-1']}")
-    # result_1 = eval(f'snippet.{function_1}')
     try:
         result_1 = exec_with_return(f"{code_body}\n{test_function_1}")
         result_2 = exec_with_return(f"{code_body}\n{test_function_2}")
-    except SyntaxError:
-        return 'Syntax Error' # Buggy
-    except:
-        return 'Unsuccessful attempt'      # This can be anything but the correct return value
+    except Exception as e:
+        print(e)
+        return {'error': e}      # This can be anything but the correct return value
     print('result after eval: ', result_1, result_2)
    
     return [result_1, result_2] # send back the returned value to frontend
