@@ -41,3 +41,38 @@ def test_index_page__logged_in(client):
 def test_home_bad_http_method(api):
    resp = api.post('/logout')
    assert resp.status_code == 500
+
+
+import json
+def test_add_user(api):
+    """Ensure a new user can be added to the database."""
+    with api as client:
+        response = client.post(
+            '/register',
+            data=json.dumps(dict(
+                username='chess',
+                email='naka@real.com'
+            )),
+            content_type='application/json',
+        )
+        data = json.loads(response.data.decode())
+        assert response.status_code == 200
+     
+        assert b"something went wrong!" in response.data
+      
+ 
+def test_reg_user(api):
+   """Ensure a new user can be added to the database."""
+   with api as client:
+       response = client.post(
+           '/register',
+           data=json.dumps(dict(
+               username='dhar',
+               email="dh89@gnail.co",
+               password='learny3'
+           )),
+           content_type='application/json',
+       )
+       data = json.loads(response.data.decode())
+       assert response.status_code == 200
+       assert b"user created" in response.data
