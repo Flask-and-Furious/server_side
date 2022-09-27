@@ -76,3 +76,36 @@ def test_reg_user(api):
        data = json.loads(response.data.decode())
        assert response.status_code == 200
        assert b"user created" in response.data
+
+
+# login route test
+def test_login(api):
+    """test credentials."""
+    with api as client:
+        response = client.post(
+            '/login',
+            data=json.dumps(dict(
+                username='prabin',
+                email='pro3@realpython.co'
+            )),
+            content_type='application/json',
+        )
+        data = json.loads(response.data.decode())
+        assert b"something went wrong!" in response.data
+
+     
+
+def test_login(api):
+    """test with credentials."""
+    with api as client:
+        response = client.post(
+            '/login',
+            data=json.dumps(dict(
+                username='hari9',
+                password='great12'
+            )),
+            content_type='application/json',
+        )
+        data = json.loads(response.data.decode())
+        assert response.status_code == 200
+          
