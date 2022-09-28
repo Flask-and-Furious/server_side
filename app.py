@@ -15,20 +15,22 @@ from os import environ
 # Load environment variables
 
 load_dotenv()
+'''
 database_uri = environ.get('DATABASE_URL') 
 if 'postgres' in database_uri:
     database_uri = database_uri.replace('postgres:', 'postgresql:')
 secret_key = environ.get('SECRET_KEY')
-
+'''
 # Set up app
 
 app = Flask(__name__)
+'''
 app.config.update(
     SQLALCHEMY_DATABASE_URI=database_uri,
     SQLACHEMY_TRACK_MODIFICATIONS=environ.get('SQL_ALCHEMY_TRACK_MODIFICATIONS'),
     SECRET_KEY=secret_key,
     JWT_SECRET_KEY=environ.get('JWT_SECRET_KEY')
-)
+)'''
 
 CORS(app)
 jwt = JWTManager(app)
