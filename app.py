@@ -11,6 +11,8 @@ from flask_jwt_extended import JWTManager, create_access_token
 
 from dotenv import load_dotenv 
 from os import environ 
+import ast
+import copy
 
 # Load environment variables
 
@@ -126,25 +128,41 @@ def register():
 
 @app.route('/code', methods=['POST']) # route for accepting codes from frontend
 def incoming_code():
-    snip = open('snippet.py', 'w') # create (or overwrite) a snippet.py file with the code content from the frontend
-    snip.write(request.get_json()['code-package']['snippet']['body'])
-    snip.close()
-    import snippet # import the snippet.py here instead of the top because the content is updated at this stage only
-    function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
-    function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
+
+    def convertExpr2Expression(Expr):
+        Expr.lineno = 0
+        Expr.col_offset = 0
+        result = ast.Expression(Expr.value, lineno=0, col_offset = 0)
+        return result
+
+    def exec_with_return(code):
+        code_ast = ast.parse(code)
+
+        init_ast = copy.deepcopy(code_ast)
+        init_ast.body = code_ast.body[:-1]
+
+        last_ast = copy.deepcopy(code_ast)
+        last_ast.body = code_ast.body[-1:]
+
+        exec(compile(init_ast, "<ast>", "exec"), globals())
+        if type(last_ast.body[0]) == ast.Expr:
+            return eval(compile(convertExpr2Expression(last_ast.body[0]), "<ast>", "eval"),globals())
+        else:
+            exec(compile(last_ast, "<ast>", "exec"),globals())
+
+    code_body = request.get_json()['code-package']['snippet']['body']
+    test_function_1 = request.get_json()['code-package']['snippet']['to-execute-1']
+    test_function_2 = request.get_json()['code-package']['snippet']['to-execute-2']
     try:
-        result_1 = eval(f'snippet.{function_1}')
-        result_2 = eval(f'snippet.{function_2}')
-    except SyntaxError:
-        return 'Syntax Error' # Buggy
-    except:
-        return 'Unsuccessful attempt'      # This can be anything but the correct return value
+        result_1 = exec_with_return(f"{code_body}\n{test_function_1}")
+        result_2 = exec_with_return(f"{code_body}\n{test_function_2}")
+    except BaseException as e: 
+        print(e)
+        return {'error' : str(e)}      # This can be anything but the correct return value
     print('result after eval: ', result_1, result_2)
-   
+
     return [result_1, result_2] # send back the returned value to frontend
     # integer cannot be returned for some reason. Hmmm... silly Python!
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
