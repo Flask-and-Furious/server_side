@@ -16,6 +16,8 @@ flask-migrate = "*"
 psycopg2 = "*"
 psycopg2-binary = "*"
 flask-jwt-extended = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [dev-packages]
 pytest = "*"
