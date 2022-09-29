@@ -7,7 +7,7 @@ Deployed Server URL [https://python-debug.herokuapp.com](https://python-debug.he
 
 ## Installation & Usage 
 
-- Clone or download the repo.
+- Clone/download the repo or try the deployed version
 - `pipenv shell` : to start virtual environment
 - `pipenv install` --dev : install all required packages.
 - Set up environment variables in a `.env` file.
