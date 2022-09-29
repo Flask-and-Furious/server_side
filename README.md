@@ -1,4 +1,4 @@
-# Bug Basher Server
+# Bug Basher - Server
 
 Python Server for [Bug Basher](https://bug-basher.netlify.app/)
 
