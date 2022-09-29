@@ -1,6 +1,6 @@
 # Bug Basher Server
 
-Python Server for (bug basher frontend link)
+Python Server for [Bug Basher](https://bug-basher.netlify.app/)
 
 Deployed Server URL [https://python-debug.herokuapp.com](https://python-debug.herokuapp.com)
 
