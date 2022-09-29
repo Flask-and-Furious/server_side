@@ -21,6 +21,14 @@ JWT_SECRET_KEY=XXXX
 ```
 - `pipenv run dev` : run the development server
 
+## Tests 
+
+- Go to `final test` branch 
+- `pipenv shell` : to start virtual environment
+- `pipenv install` --dev : install all required packages.
+- `pipenv run test` : to run tests 
+- `pipenv run coverage` : to run the coverage from tests
+
 ## Routes 
 
 ### GET requests
